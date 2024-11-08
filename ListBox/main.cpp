@@ -97,7 +97,7 @@ BOOL CALLBACK DlgProcAddItem(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
-		SetFocus(GetDlgItem(hwnd, IDC_EDIT_ADD));
+		//SetFocus(GetDlgItem(hwnd, IDC_EDIT_ADD));
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
