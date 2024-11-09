@@ -30,6 +30,23 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_VKEYTOITEM:
+	{
+		switch (LOWORD(wParam))
+		{
+		case VK_DELETE:
+		{
+			HWND hList = GetDlgItem(hwnd, IDC_LIST);
+			INT i = SendMessage(hList, LB_GETCURSEL, 0, 0);
+			SendMessage(hList, LB_DELETESTRING, i, 0);
+		}
+		break;
+		/*case VK_RETURN:
+			DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG_ADD), hwnd, (DLGPROC)DlgProcEditItem, 0);
+		*/
+		}
+	}
+	break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -49,11 +66,18 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			CONST INT SIZE = 256;
 			CHAR sz_buffer[SIZE]{};
 			HWND hList = GetDlgItem(hwnd, IDC_LIST);
-			INT i = SendMessage(hList, LB_GETCURSEL, 0, 0);
-			SendMessage(hList, LB_GETTEXT, i, (LPARAM)sz_buffer);
-			CHAR sz_message[SIZE]{};
-			sprintf(sz_message, "Вы выбрали пункт №%i со значением\"%s\".", i + 1, sz_buffer);
-			MessageBox(hwnd, sz_message, "Info", MB_OK | MB_ICONINFORMATION);
+			if (GetFocus() == hList)
+			{
+				DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG_ADD), hwnd, DlgProcEditItem, 0);
+			}
+			else
+			{
+				INT i = SendMessage(hList, LB_GETCURSEL, 0, 0);
+				SendMessage(hList, LB_GETTEXT, i, (LPARAM)sz_buffer);
+				CHAR sz_message[SIZE]{};
+				sprintf(sz_message, "Вы выбрали пункт №%i со значением\"%s\".", i + 1, sz_buffer);
+				MessageBox(hwnd, sz_message, "Info", MB_OK | MB_ICONINFORMATION);
+			}
 		}
 		break;
 		case IDCANCEL: EndDialog(hwnd, 0);
