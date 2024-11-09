@@ -91,8 +91,8 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		char sz_title[256];
 		sprintf(sz_title, "My window position (%d, %d) | Size (%d x %d)", x_pos, y_pos, width, height);
 		SetWindowText(hwnd, sz_title);
-		break;
 	}
+		break;
 	case WM_COMMAND:
 		break;
 	case WM_DESTROY:
