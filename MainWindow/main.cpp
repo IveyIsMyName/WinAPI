@@ -19,8 +19,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	wc.cbWndExtra = 0;
 	//cb... - Count Bytes
 
-	//wc.hIcon = (HICON)LoadImage(hInstance, "bitcoin.ico", IMAGE_ICON, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
-	//wc.hIconSm = (HICON)LoadImage(hInstance, "emotion.ico", IMAGE_ICON, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
+	//wc.hIcon = (HICON)LoadImage(hInstance, "Ico\\bitcoin.ico", IMAGE_ICON, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
+	//wc.hIconSm = (HICON)LoadImage(hInstance, "Ico\\emotion.ico", IMAGE_ICON, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
 	wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON2));
 	wc.hCursor = (HCURSOR)LoadImage(hInstance, "normal select.ani", IMAGE_CURSOR, LR_DEFAULTSIZE, LR_DEFAULTSIZE, LR_LOADFROMFILE);
@@ -30,7 +30,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = g_sz_MY_WINDOW_CLASS;
 	wc.lpfnWndProc = (WNDPROC)WndProc;
-
+	
 	if (!RegisterClassEx(&wc))
 	{
 		MessageBox(NULL, "Class registration failed", NULL, MB_OK | MB_ICONERROR);
