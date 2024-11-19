@@ -243,8 +243,11 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (wParam >= 0x30 && wParam <= 0x39)
 			SendMessage(hwnd, WM_COMMAND, wParam - 0x30 + IDC_BUTTON_0, 0);
+		if (wParam >= 0x60 && wParam <= 0x69)
+			SendMessage(hwnd, WM_COMMAND, wParam - 0x60 + IDC_BUTTON_0, 0);
 		switch (wParam)
 		{
+		case VK_DECIMAL:
 		case VK_OEM_PERIOD:
 			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_POINT), 0);
 			break;
