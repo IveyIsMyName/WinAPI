@@ -6,9 +6,9 @@
 #pragma comment (lib, "Gdiplus.lib")
 using namespace Gdiplus;
 
-Image* bgImage = NULL;
 HBRUSH hbrBkgnd;
 
+Image* bgImage = NULL;
 CONST CHAR g_sz_CLASS_NAME[] = "Calc PV_319";
 
 CONST INT g_i_BUTTON_SIZE = 50;
@@ -61,14 +61,12 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	ULONG_PTR gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-
 	if (!RegisterClassEx(&wClass))
 	{
 		MessageBox(NULL, "Class registration failed!", NULL, MB_OK | MB_ICONERROR);
 		return 0;
 	}
 	//2) Создание окна:
-
 	HWND hwnd = CreateWindowEx
 	(
 		NULL,
@@ -83,7 +81,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		NULL
 	);
 
-	bgImage = Image::FromFile(L"Background calc.jpg");
+	bgImage = Image::FromFile(L"Background calc.jpg"); // файл для бэкграунда
 
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
@@ -95,6 +93,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
 	GdiplusShutdown(gdiplusToken);
 	return msg.wParam;
 }
@@ -235,7 +234,6 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			// Устанавливаем прозрачный режим фона
 			SetBkMode(lpDrawItem->hDC, TRANSPARENT);
 			// Загружаем фон окна
-
 			Graphics graphics(lpDrawItem->hDC);
 			graphics.DrawImage(
 				bgImage,
@@ -252,7 +250,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			// Устанавливаем карандаш для рисования границ
 			HDC hdc = lpDrawItem->hDC;
-			HPEN hPen = CreatePen(PS_SOLID, 2, RGB(169, 169, 169));  // Черный цвет
+			HPEN hPen = CreatePen(PS_SOLID, 2, RGB(169, 169, 169));
 			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
 
 			// Устанавливаем кисть для закраски (NULL, чтобы закраски не было)
@@ -282,16 +280,17 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (GetDlgCtrlID(hwndEdit) == IDC_EDIT_DISPLAY)
 		{
 			// Устанавливаем цвет текста
-			SetTextColor(hdcEdit, RGB(0, 0, 0)); 
+			SetTextColor(hdcEdit, RGB(0, 0, 0));
 
 			// Устанавливаем цвет фона
-			SetBkColor(hdcEdit, RGB(211, 211, 211)); 
+			SetBkColor(hdcEdit, RGB(211, 211, 211));
 
 			// Возвращаем кисть для заливки фона
 			return (INT_PTR)hbrBkgnd;
 		}
 		break;
 	}
+	break;
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
@@ -313,7 +312,12 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SendMessage(hEditDisplay, WM_GETTEXT, SIZE, (LPARAM)sz_display);
 		if (LOWORD(wParam) >= IDC_BUTTON_0 && LOWORD(wParam) <= IDC_BUTTON_9)
 		{
-			if (input_operation)sz_display[0] = 0;
+			if (!input && !input_operation)
+			{
+				SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_CLEAR), 0);
+				sz_display[0] = 0;
+			}
+			if (!input && input_operation)sz_display[0] = 0;
 			sz_digit[0] = LOWORD(wParam) - IDC_BUTTON_0 + '0';
 			if (strlen(sz_display) == 1 && sz_display[0] == '0')
 				sz_display[0] = sz_digit[0];
@@ -321,7 +325,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				strcat(sz_display, sz_digit);
 			SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_display);
 			input = TRUE;
-			input_operation = FALSE;
+			//input_operation = FALSE;
 		}
 		if (LOWORD(wParam) == IDC_BUTTON_POINT)
 		{
@@ -329,8 +333,6 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			strcat(sz_display, ".");
 			SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_display);
 		}
-		//if (LOWORD(wParam) == IDC_EDIT_DISPLAY && HIWORD(wParam) == EN_SETFOCUS)
-			//SetFocus(hwnd);
 		if (LOWORD(wParam) == IDC_BUTTON_BSP)
 		{
 			if (strlen(sz_display) == 1)sz_display[0] = '0';
@@ -343,19 +345,21 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			operation = 0;
 			input = FALSE;
 			input_operation = FALSE;
+			//ZeroMemory(sz_display, SIZE);
 			SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)"0");
 		}
 		if (LOWORD(wParam) >= IDC_BUTTON_PLUS && LOWORD(wParam) <= IDC_BUTTON_SLASH)
 		{
 			if (a == DBL_MIN)a = atof(sz_display);
-			//input = FALSE;
-			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_EQUAL), 0);
+			input = FALSE;
+			if (input_operation)SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_EQUAL), 0);
 			operation = LOWORD(wParam);
+			input = FALSE;
 			input_operation = TRUE;
 		}
 		if (LOWORD(wParam) == IDC_BUTTON_EQUAL)
 		{
-			if (input)b = atof(sz_display);
+			if (input || b == DBL_MIN && !input)b = atof(sz_display);
 			input = FALSE;
 			switch (operation)
 			{
@@ -378,10 +382,15 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_KEYDOWN:
 	{
-		if (wParam >= 0x30 && wParam <= 0x39)
+		if (GetKeyState(VK_SHIFT) < 0)
+		{
+			if (wParam == 0x38) SendMessage(hwnd, WM_COMMAND, IDC_BUTTON_ASTER, 0);
+		}
+		else if (wParam >= 0x30 && wParam <= 0x39)
 			SendMessage(hwnd, WM_COMMAND, wParam - 0x30 + IDC_BUTTON_0, 0);
-		if (wParam >= 0x60 && wParam <= 0x69)
+		else if (wParam >= 0x60 && wParam <= 0x69)
 			SendMessage(hwnd, WM_COMMAND, wParam - 0x60 + IDC_BUTTON_0, 0);
+
 		switch (wParam)
 		{
 		case VK_DECIMAL:
@@ -397,12 +406,15 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case VK_RETURN:
 			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_EQUAL), 0);
 			break;
+		case VK_OEM_PLUS:
 		case VK_ADD:
 			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_PLUS), 0);
 			break;
+		case VK_OEM_MINUS:
 		case VK_SUBTRACT:
 			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_MINUS), 0);
 			break;
+		case VK_OEM_2:
 		case VK_DIVIDE:
 			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_SLASH), 0);
 			break;
@@ -411,6 +423,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 	}
+	break;
 	case WM_DESTROY:
 		if (bgImage)delete bgImage;
 		PostQuitMessage(0);
