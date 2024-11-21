@@ -1,7 +1,13 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
 #include"resource.h"
-#include<iostream>
+#include <iostream>
+#include <gdiplus.h>
+#pragma comment (lib, "Gdiplus.lib")
+using namespace Gdiplus;
+
+Image* bgImage = NULL;
+HBRUSH hbrBkgnd;
 
 CONST CHAR g_sz_CLASS_NAME[] = "Calc PV_319";
 
@@ -43,12 +49,18 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	wClass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wClass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wClass.hCursor = LoadCursor(hInstance, IDC_ARROW);
-	wClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	wClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
 
 	wClass.hInstance = hInstance;
 	wClass.lpszClassName = g_sz_CLASS_NAME;
 	wClass.lpfnWndProc = (WNDPROC)WndProc;
 	wClass.lpszMenuName = NULL;
+
+	// Переменные для инициализации GDI+
+	GdiplusStartupInput gdiplusStartupInput;
+	ULONG_PTR gdiplusToken;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
 
 	if (!RegisterClassEx(&wClass))
 	{
@@ -70,6 +82,9 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		hInstance,
 		NULL
 	);
+
+	bgImage = Image::FromFile(L"Background calc.jpg");
+
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
 
@@ -80,6 +95,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+	GdiplusShutdown(gdiplusToken);
 	return msg.wParam;
 }
 
@@ -90,6 +106,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static INT operation = 0;
 	static BOOL input = FALSE;
 	static BOOL input_operation = FALSE;
+
 	switch (uMsg)
 	{
 	case WM_CREATE:
@@ -116,8 +133,8 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				sz_digit[0] = i + j + 49;  //49 - ASCII-код единицы
 				CreateWindowEx
 				(
-					NULL, "Button", sz_digit,
-					WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+					0, "Button", sz_digit,
+					WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
 					g_i_BUTTON_START_X + j * (g_i_BUTTON_SIZE + g_i_INTERVAL),
 					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (2 - i / 3),
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -130,8 +147,8 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		CreateWindowEx
 		(
-			NULL, "Button", "0",
-			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			0, "Button", "0",
+			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 			g_i_BUTTON_START_X,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_DOUBLE_SIZE, g_i_BUTTON_SIZE,
@@ -143,7 +160,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		CreateWindowEx
 		(
 			NULL, "Button", ".",
-			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 			g_i_BUTTON_START_X + g_i_BUTTON_DOUBLE_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -158,7 +175,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			CreateWindowEx
 			(
 				NULL, "Button", g_OPERATIONS[i],
-				WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+				WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 				g_i_OPERATION_BUTTON_START_X,
 				g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (3 - i),
 				g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -172,7 +189,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		CreateWindowEx
 		(
 			NULL, "Button", "<-",
-			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 			g_i_CONTROL_BUTTON_START_X,
 			g_i_CONTROL_BUTTON_START_Y,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -184,7 +201,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		CreateWindowEx
 		(
 			NULL, "Button", "C",
-			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 			g_i_CONTROL_BUTTON_START_X,
 			g_i_CONTROL_BUTTON_START_Y + g_i_BUTTON_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -196,7 +213,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		CreateWindowEx
 		(
 			NULL, "Button", "=",
-			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
 			g_i_CONTROL_BUTTON_START_X,
 			g_i_CONTROL_BUTTON_START_Y + g_i_BUTTON_DOUBLE_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_SIZE, g_i_BUTTON_DOUBLE_SIZE,
@@ -205,6 +222,86 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+	}
+	break;
+	case WM_DRAWITEM:
+	{
+		LPDRAWITEMSTRUCT lpDrawItem = (LPDRAWITEMSTRUCT)lParam;
+		if (lpDrawItem->CtlType == ODT_BUTTON)
+		{
+			BOOL bPressed = (lpDrawItem->itemState & ODS_SELECTED);
+			DrawEdge(lpDrawItem->hDC, &lpDrawItem->rcItem, /*bPressed ? EDGE_SUNKEN :*/ EDGE_RAISED, BF_RECT);
+			SetTextColor(lpDrawItem->hDC, RGB(0, 0, 0));
+			// Устанавливаем прозрачный режим фона
+			SetBkMode(lpDrawItem->hDC, TRANSPARENT);
+			// Загружаем фон окна
+
+			Graphics graphics(lpDrawItem->hDC);
+			graphics.DrawImage(
+				bgImage,
+				static_cast<REAL>(lpDrawItem->rcItem.left),
+				static_cast<REAL>(lpDrawItem->rcItem.top),
+				static_cast<REAL>(lpDrawItem->rcItem.right - lpDrawItem->rcItem.left),
+				static_cast<REAL>(lpDrawItem->rcItem.bottom - lpDrawItem->rcItem.top)
+			);
+
+			// Рисование текста кнопки
+			char szText[256];
+			GetWindowText(lpDrawItem->hwndItem, szText, sizeof(szText));
+			DrawText(lpDrawItem->hDC, szText, -1, &lpDrawItem->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+			// Устанавливаем карандаш для рисования границ
+			HDC hdc = lpDrawItem->hDC;
+			HPEN hPen = CreatePen(PS_SOLID, 2, RGB(169, 169, 169));  // Черный цвет
+			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+
+			// Устанавливаем кисть для закраски (NULL, чтобы закраски не было)
+			HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+
+			// Рисуем прямоугольник (границы кнопки)
+			Rectangle(hdc, lpDrawItem->rcItem.left, lpDrawItem->rcItem.top, lpDrawItem->rcItem.right, lpDrawItem->rcItem.bottom);
+
+			// Восстанавливаем старые GDI-объекты
+			SelectObject(hdc, hOldPen);
+			SelectObject(hdc, hOldBrush);
+
+			// Уничтожаем созданные объекты
+			DeleteObject(hPen);
+
+			return TRUE; // Обработано
+		}
+		break;
+	}
+	break;
+	case WM_CTLCOLOREDIT:
+	{
+		HDC hdcEdit = (HDC)wParam;
+		HWND hwndEdit = (HWND)lParam;
+
+		// Проверяем, что это наш Edit control по его ID
+		if (GetDlgCtrlID(hwndEdit) == IDC_EDIT_DISPLAY)
+		{
+			// Устанавливаем цвет текста
+			SetTextColor(hdcEdit, RGB(0, 0, 0)); 
+
+			// Устанавливаем цвет фона
+			SetBkColor(hdcEdit, RGB(211, 211, 211)); 
+
+			// Возвращаем кисть для заливки фона
+			return (INT_PTR)hbrBkgnd;
+		}
+		break;
+	}
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hwnd, &ps);
+		Graphics graphics(hdc);
+
+		RECT rect;
+		GetClientRect(hwnd, &rect);
+		graphics.DrawImage(bgImage, 0, 0, rect.right, rect.bottom);
+		EndPaint(hwnd, &ps);
 	}
 	break;
 	case WM_COMMAND:
@@ -297,10 +394,25 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case VK_BACK:
 			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_BSP), 0);
 			break;
+		case VK_RETURN:
+			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_EQUAL), 0);
+			break;
+		case VK_ADD:
+			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_PLUS), 0);
+			break;
+		case VK_SUBTRACT:
+			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_MINUS), 0);
+			break;
+		case VK_DIVIDE:
+			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_SLASH), 0);
+			break;
+		case VK_MULTIPLY:
+			SendMessage(hwnd, WM_COMMAND, LOWORD(IDC_BUTTON_ASTER), 0);
+			break;
 		}
 	}
-	break;
 	case WM_DESTROY:
+		if (bgImage)delete bgImage;
 		PostQuitMessage(0);
 		break;
 	case WM_CLOSE:
