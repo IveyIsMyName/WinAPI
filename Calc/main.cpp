@@ -123,7 +123,19 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		AddFontResourceEx("Fonts\\digital-7.ttf", FR_PRIVATE, 0);
+		HFONT hFont = CreateFont
+		(
+			g_i_DISPLAY_HEIGHT - 2, g_i_DISPLAY_HEIGHT / 3,
+			0, 0, FW_BOLD,
+			FALSE, FALSE, FALSE,
+			DEFAULT_CHARSET, OUT_TT_PRECIS,
+			CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+			FF_DONTCARE, "digital-7"
+		);
+		SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
 
+		//TODO: Button Icons. 
 		CHAR sz_digit[2] = "";
 		for (int i = 6; i >= 0; i -= 3)
 		{
@@ -133,7 +145,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				CreateWindowEx
 				(
 					0, "Button", sz_digit,
-					WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+					WS_VISIBLE | WS_CHILD | BS_BITMAP,
 					g_i_BUTTON_START_X + j * (g_i_BUTTON_SIZE + g_i_INTERVAL),
 					g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (2 - i / 3),
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -144,10 +156,24 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				);
 			}
 		}
-		CreateWindowEx
+		CHAR filename[FILENAME_MAX]{};
+		for (int i = 0; i < 10; i++)
+		{
+			sprintf(filename, "ButtonsBMP\\button_%i.bmp", i);
+			HWND hButton = GetDlgItem(hwnd, IDC_BUTTON_0 + i);
+			HBITMAP hBitmap = (HBITMAP)LoadImage
+			(
+				GetModuleHandle(NULL),
+				filename, IMAGE_BITMAP,
+				g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
+				LR_LOADFROMFILE
+			);
+			SendMessage(hButton, BM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBitmap);
+		}
+		HWND hButton0 = CreateWindowEx
 		(
 			0, "Button", "0",
-			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+			WS_CHILD | WS_VISIBLE | BS_BITMAP,
 			g_i_BUTTON_START_X,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_DOUBLE_SIZE, g_i_BUTTON_SIZE,
@@ -156,10 +182,15 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
-		CreateWindowEx
+		HBITMAP hBitmap0 = (HBITMAP)LoadImage
+		(GetModuleHandle(NULL), "ButtonsBMP\\button_0.bmp",
+			IMAGE_BITMAP, g_i_BUTTON_DOUBLE_SIZE, g_i_BUTTON_SIZE,
+			LR_LOADFROMFILE);
+		SendMessage(hButton0, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap0);
+		HWND hButtonPeriod = CreateWindowEx
 		(
 			NULL, "Button", ".",
-			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+			WS_CHILD | WS_VISIBLE | BS_BITMAP,
 			g_i_BUTTON_START_X + g_i_BUTTON_DOUBLE_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * 3,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -168,13 +199,20 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		HBITMAP hBitmapPeriod = (HBITMAP)LoadImage
+		(
+			GetModuleHandle(NULL), "ButtonsBMP\\button_point.bmp",
+			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
+			LR_LOADFROMFILE
+		);
+		SendMessage(hButtonPeriod, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapPeriod);
 
 		for (int i = 0; i < 4; i++)
 		{
 			CreateWindowEx
 			(
 				NULL, "Button", g_OPERATIONS[i],
-				WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+				WS_CHILD | WS_VISIBLE | BS_BITMAP,
 				g_i_OPERATION_BUTTON_START_X,
 				g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE + g_i_INTERVAL) * (3 - i),
 				g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -184,11 +222,24 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				NULL
 			);
 		}
+		for (int i = 0; i < 4; i++)
+		{
+			sprintf(filename, "ButtonsBMP\\button_op_%i.bmp", i);
+			HWND hOperationButtons = GetDlgItem(hwnd, IDC_BUTTON_PLUS + i);
+			HBITMAP hOperationBitmap = (HBITMAP)LoadImage
+			(
+				GetModuleHandle(NULL),
+				filename, IMAGE_BITMAP,
+				g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
+				LR_LOADFROMFILE
+			);
+			SendMessage(hOperationButtons, BM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hOperationBitmap);
+		}
 
-		CreateWindowEx
+		HWND hButtonBSP = CreateWindowEx
 		(
 			NULL, "Button", "<-",
-			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+			WS_CHILD | WS_VISIBLE | BS_BITMAP,
 			g_i_CONTROL_BUTTON_START_X,
 			g_i_CONTROL_BUTTON_START_Y,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -197,10 +248,17 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
-		CreateWindowEx
+		HBITMAP hBitmapBSP = (HBITMAP)LoadImage
+		(
+			GetModuleHandle(NULL), "ButtonsBMP\\button_bsp.bmp",
+			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
+			LR_LOADFROMFILE
+		);
+		SendMessage(hButtonBSP, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapBSP);
+		HWND hButtonCLR = CreateWindowEx
 		(
 			NULL, "Button", "C",
-			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+			WS_CHILD | WS_VISIBLE | BS_BITMAP,
 			g_i_CONTROL_BUTTON_START_X,
 			g_i_CONTROL_BUTTON_START_Y + g_i_BUTTON_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
@@ -209,10 +267,17 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
-		CreateWindowEx
+		HBITMAP hBitmapCLR = (HBITMAP)LoadImage
+		(
+			GetModuleHandle(NULL), "ButtonsBMP\\button_clr.bmp",
+			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
+			LR_LOADFROMFILE
+		);
+		SendMessage(hButtonCLR, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapCLR);
+		HWND hButtonEQL = CreateWindowEx
 		(
 			NULL, "Button", "=",
-			WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+			WS_CHILD | WS_VISIBLE | BS_BITMAP,
 			g_i_CONTROL_BUTTON_START_X,
 			g_i_CONTROL_BUTTON_START_Y + g_i_BUTTON_DOUBLE_SIZE + g_i_INTERVAL,
 			g_i_BUTTON_SIZE, g_i_BUTTON_DOUBLE_SIZE,
@@ -221,6 +286,13 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		HBITMAP hBitmapEQL = (HBITMAP)LoadImage
+		(
+			GetModuleHandle(NULL), "ButtonsBMP\\button_equal.bmp",
+			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_DOUBLE_SIZE,
+			LR_LOADFROMFILE
+		);
+		SendMessage(hButtonEQL, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapEQL);
 	}
 	break;
 	case WM_DRAWITEM:
@@ -280,10 +352,10 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (GetDlgCtrlID(hwndEdit) == IDC_EDIT_DISPLAY)
 		{
 			// Устанавливаем цвет текста
-			SetTextColor(hdcEdit, RGB(0, 0, 0));
+			SetTextColor(hdcEdit, RGB(0, 100, 0));
 
 			// Устанавливаем цвет фона
-			SetBkColor(hdcEdit, RGB(211, 211, 211));
+			SetBkColor(hdcEdit, RGB(190, 190, 190));
 
 			// Возвращаем кисть для заливки фона
 			return (INT_PTR)hbrBkgnd;
@@ -325,7 +397,6 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				strcat(sz_display, sz_digit);
 			SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_display);
 			input = TRUE;
-			//input_operation = FALSE;
 		}
 		if (LOWORD(wParam) == IDC_BUTTON_POINT)
 		{
