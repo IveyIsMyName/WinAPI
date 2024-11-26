@@ -188,7 +188,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		(GetModuleHandle(NULL), "ButtonsBMP\\button_0.bmp",
 			IMAGE_BITMAP, g_i_BUTTON_DOUBLE_SIZE, g_i_BUTTON_SIZE,
 			LR_LOADFROMFILE);
-		SendMessage(hButton0, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap0);
+		//SendMessage(hButton0, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap0);
 		HWND hButtonPeriod = CreateWindowEx
 		(
 			NULL, "Button", ".",
@@ -207,7 +207,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 			LR_LOADFROMFILE
 		);
-		SendMessage(hButtonPeriod, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapPeriod);
+		//SendMessage(hButtonPeriod, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapPeriod);
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -224,7 +224,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				NULL
 			);
 		}
-		for (int i = 0; i < 4; i++)
+		/*for (int i = 0; i < 4; i++)
 		{
 			sprintf(filename, "ButtonsBMP\\button_op_%i.bmp", i);
 			HWND hOperationButtons = GetDlgItem(hwnd, IDC_BUTTON_PLUS + i);
@@ -236,7 +236,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				LR_LOADFROMFILE
 			);
 			SendMessage(hOperationButtons, BM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hOperationBitmap);
-		}
+		}*/
 
 		HWND hButtonBSP = CreateWindowEx
 		(
@@ -256,7 +256,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 			LR_LOADFROMFILE
 		);
-		SendMessage(hButtonBSP, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapBSP);
+		//SendMessage(hButtonBSP, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapBSP);
 		HWND hButtonCLR = CreateWindowEx
 		(
 			NULL, "Button", "C",
@@ -275,7 +275,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 			LR_LOADFROMFILE
 		);
-		SendMessage(hButtonCLR, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapCLR);
+		//SendMessage(hButtonCLR, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapCLR);
 		HWND hButtonEQL = CreateWindowEx
 		(
 			NULL, "Button", "=",
@@ -294,7 +294,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			IMAGE_BITMAP, g_i_BUTTON_SIZE, g_i_BUTTON_DOUBLE_SIZE,
 			LR_LOADFROMFILE
 		);
-		SendMessage(hButtonEQL, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapEQL);
+		//SendMessage(hButtonEQL, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapEQL);
 
 		SetSkin(hwnd, "Square blue");
 	}
@@ -356,7 +356,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (GetDlgCtrlID(hwndEdit) == IDC_EDIT_DISPLAY)
 		{
 			// Устанавливаем цвет текста
-			SetTextColor(hdcEdit, RGB(0, 100, 0));
+			SetTextColor(hdcEdit, RGB(0, 150, 0));
 
 			// Устанавливаем цвет фона
 			SetBkColor(hdcEdit, RGB(190, 190, 190));
@@ -499,6 +499,29 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_CONTEXTMENU:
+	{
+		CHAR sz_buffer[FILENAME_MAX] = "";
+		HMENU hMainMenu = CreatePopupMenu();
+		HMENU hSubMenu = CreatePopupMenu();
+		InsertMenu(hMainMenu, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)hSubMenu, "Skins");
+		InsertMenu(hSubMenu, 0, MF_BYPOSITION | MF_STRING, ID_SQUARE_BLUE, "Square blue");
+		InsertMenu(hSubMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+		InsertMenu(hSubMenu, 2, MF_BYPOSITION | MF_STRING, ID_METAL_MISTRAL, "Metal mistral");
+		BOOL item = TrackPopupMenuEx(hMainMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN | TPM_RETURNCMD, LOWORD(lParam), HIWORD(lParam), hwnd, NULL);
+		switch (item)
+		{
+		case ID_SQUARE_BLUE:	strcpy(sz_buffer, "Square blue"); break;
+		case ID_METAL_MISTRAL:	strcpy(sz_buffer, "Metal mistral"); break;
+		case ID_EXIT:			DestroyWindow(hwnd);
+								PostQuitMessage(0); break;
+		}
+		if (item)SetSkin(hwnd, sz_buffer);
+
+		DestroyMenu(hSubMenu);
+		DestroyMenu(hMainMenu);
+	}
+	break;
 	case WM_DESTROY:
 		if (bgImage)delete bgImage;
 		PostQuitMessage(0);
@@ -508,6 +531,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	default:	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
+	return FALSE;
 }
 
 CONST CHAR* g_BUTTON_FILENAME[] =
