@@ -501,22 +501,23 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_CONTEXTMENU:
 	{
-		CHAR sz_buffer[FILENAME_MAX] = "";
+		//CHAR sz_buffer[FILENAME_MAX] = "";
 		HMENU hMainMenu = CreatePopupMenu();
 		HMENU hSubMenu = CreatePopupMenu();
 		InsertMenu(hMainMenu, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)hSubMenu, "Skins");
-		InsertMenu(hSubMenu, 0, MF_BYPOSITION | MF_STRING, ID_SQUARE_BLUE, "Square blue");
-		InsertMenu(hSubMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-		InsertMenu(hSubMenu, 2, MF_BYPOSITION | MF_STRING, ID_METAL_MISTRAL, "Metal mistral");
+		InsertMenu(hSubMenu, 0, MF_BYPOSITION | MF_STRING, IDR_SQUARE_BLUE, "Square blue");
+		InsertMenu(hSubMenu, 1, MF_BYPOSITION | MF_STRING, IDR_METAL_MISTRAL, "Metal mistral");
+		InsertMenu(hSubMenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+		InsertMenu(hSubMenu, 3, MF_BYPOSITION | MF_STRING, IDR_EXIT, "Exit");
 		BOOL item = TrackPopupMenuEx(hMainMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN | TPM_RETURNCMD, LOWORD(lParam), HIWORD(lParam), hwnd, NULL);
 		switch (item)
 		{
-		case ID_SQUARE_BLUE:	strcpy(sz_buffer, "Square blue"); break;
-		case ID_METAL_MISTRAL:	strcpy(sz_buffer, "Metal mistral"); break;
-		case ID_EXIT:			DestroyWindow(hwnd);
-								PostQuitMessage(0); break;
+		case IDR_SQUARE_BLUE:	SetSkin(hwnd, "Square blue"); break;
+		case IDR_METAL_MISTRAL:	SetSkin(hwnd, "Metal mistral"); break;
+		case IDR_EXIT:			DestroyWindow(hwnd);
+								PostQuitMessage(0); 
 		}
-		if (item)SetSkin(hwnd, sz_buffer);
+		//if (item)SetSkin(hwnd, sz_buffer);
 
 		DestroyMenu(hSubMenu);
 		DestroyMenu(hMainMenu);
