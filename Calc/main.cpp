@@ -406,10 +406,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		if (LOWORD(wParam) == IDC_BUTTON_POINT)
 		{
-			if (strchr(sz_display, '.'))break;
-			strcat(sz_display, ".");
+			if (strchr(sz_display, '.') && input)break;
+			if (input_operation && a == atof(sz_display))strcpy(sz_display, "0.");
+			else strcat(sz_display, ".");
 			SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_display);
 			input = TRUE;
+			strcat(sz_display, ".");
 		}
 		if (LOWORD(wParam) == IDC_BUTTON_BSP)
 		{
@@ -460,12 +462,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_KEYDOWN:
 	{
-		ProcessKey(hwnd, wParam, true);
+		ProcessKey(hwnd, wParam, TRUE);
 	}
 	break;
 	case WM_KEYUP:
 	{
-		ProcessKey(hwnd, wParam, false);
+		ProcessKey(hwnd, wParam, FALSE);
 	}
 	break;
 	case WM_CONTEXTMENU:
