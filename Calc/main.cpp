@@ -503,6 +503,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		DestroyMenu(hSubMenu);
 		DestroyMenu(hMainMenu);
 
+		if (skin_index >= IDR_SQUARE_BLUE && skin_index <= IDR_METAL_MISTRAL)
+		{
 		color_index = skin_index - IDR_CONTEXT_MENU - 1;
 		HWND hEditDisplay = GetDlgItem(hwnd, IDC_EDIT_DISPLAY);
 		HDC hdcDisplay = GetDC(hEditDisplay);
@@ -510,6 +512,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		ReleaseDC(hEditDisplay, hdcDisplay);
 		SendMessage(hEditDisplay, WM_GETTEXT, MAX_PATH, (LPARAM)sz_buffer);
 		SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_buffer);
+		}
 	}
 	break;
 	case WM_DESTROY:
