@@ -6,9 +6,9 @@
 #pragma comment (lib, "Gdiplus.lib")
 using namespace Gdiplus;
 
-HBRUSH hbrBkgnd;
+//HBRUSH hbrBkgnd;
 
-Image* bgImage = NULL;
+//Image* bgImage = NULL;
 CONST CHAR g_sz_CLASS_NAME[] = "Calc PV_319";
 
 CONST INT g_i_BUTTON_SIZE = 50;
@@ -32,6 +32,10 @@ CONST INT g_i_WINDOW_HEIGHT = g_i_DISPLAY_HEIGHT + g_i_START_Y * 2 + (g_i_BUTTON
 
 CONST CHAR* g_OPERATIONS[] = { "+", "-", "*", "/" };
 
+CONST COLORREF g_DISPLAY_BACKGROUND[] = { RGB(0, 0, 100), RGB(0, 50, 0) };
+CONST COLORREF g_DISPLAY_FOREGROUND[] = { RGB(255, 0, 0), RGB(0, 255, 0) };
+CONST COLORREF g_WINDOW_BACKGROUND[] = { RGB(0, 0, 150), RGB(75, 75, 75) };
+
 VOID SetSkin(HWND hwnd, CONST CHAR* skin);
 VOID ProcessKey(HWND hwnd, WPARAM wParam, BOOL isKeyDown);
 
@@ -53,6 +57,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	wClass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wClass.hCursor = LoadCursor(hInstance, IDC_ARROW);
 	wClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
+	HBITMAP hBackground = (HBITMAP)LoadImage(hInstance, "Background calc.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	wClass.hbrBackground = CreatePatternBrush(hBackground);
 
 	wClass.hInstance = hInstance;
 	wClass.lpszClassName = g_sz_CLASS_NAME;
@@ -60,9 +66,9 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	wClass.lpszMenuName = NULL;
 
 	// Переменные для инициализации GDI+
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+	//GdiplusStartupInput gdiplusStartupInput;
+	//ULONG_PTR gdiplusToken;
+	//GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
 	if (!RegisterClassEx(&wClass))
 	{
@@ -84,7 +90,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		NULL
 	);
 
-	bgImage = Image::FromFile(L"Background calc.jpg"); // файл для бэкграунда
+	//bgImage = Image::FromFile(L"Background calc.jpg"); // файл для бэкграунда
 
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
@@ -97,7 +103,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		DispatchMessage(&msg);
 	}
 
-	GdiplusShutdown(gdiplusToken);
+	//GdiplusShutdown(gdiplusToken);
 	return msg.wParam;
 }
 
@@ -108,6 +114,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static INT operation = 0;
 	static BOOL input = FALSE;
 	static BOOL input_operation = FALSE;
+
+	static INT color_index = 0;
 
 	switch (uMsg)
 	{
@@ -300,54 +308,54 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetSkin(hwnd, "Square blue");
 	}
 	break;
-	case WM_DRAWITEM:
-	{
-		LPDRAWITEMSTRUCT lpDrawItem = (LPDRAWITEMSTRUCT)lParam;
-		if (lpDrawItem->CtlType == ODT_BUTTON)
-		{
-			BOOL bPressed = (lpDrawItem->itemState & ODS_SELECTED);
-			DrawEdge(lpDrawItem->hDC, &lpDrawItem->rcItem, /*bPressed ? EDGE_SUNKEN :*/ EDGE_RAISED, BF_RECT);
-			SetTextColor(lpDrawItem->hDC, RGB(0, 0, 0));
-			// Устанавливаем прозрачный режим фона
-			SetBkMode(lpDrawItem->hDC, TRANSPARENT);
-			// Загружаем фон окна
-			Graphics graphics(lpDrawItem->hDC);
-			graphics.DrawImage(
-				bgImage,
-				static_cast<REAL>(lpDrawItem->rcItem.left),
-				static_cast<REAL>(lpDrawItem->rcItem.top),
-				static_cast<REAL>(lpDrawItem->rcItem.right - lpDrawItem->rcItem.left),
-				static_cast<REAL>(lpDrawItem->rcItem.bottom - lpDrawItem->rcItem.top)
-			);
+	//case WM_DRAWITEM:
+	//{
+	//	LPDRAWITEMSTRUCT lpDrawItem = (LPDRAWITEMSTRUCT)lParam;
+	//	if (lpDrawItem->CtlType == ODT_BUTTON)
+	//	{
+	//		BOOL bPressed = (lpDrawItem->itemState & ODS_SELECTED);
+	//		DrawEdge(lpDrawItem->hDC, &lpDrawItem->rcItem, /*bPressed ? EDGE_SUNKEN :*/ EDGE_RAISED, BF_RECT);
+	//		SetTextColor(lpDrawItem->hDC, RGB(0, 0, 0));
+	//		// Устанавливаем прозрачный режим фона
+	//		SetBkMode(lpDrawItem->hDC, TRANSPARENT);
+	//		// Загружаем фон окна
+	//		Graphics graphics(lpDrawItem->hDC);
+	//		graphics.DrawImage(
+	//			bgImage,
+	//			static_cast<REAL>(lpDrawItem->rcItem.left),
+	//			static_cast<REAL>(lpDrawItem->rcItem.top),
+	//			static_cast<REAL>(lpDrawItem->rcItem.right - lpDrawItem->rcItem.left),
+	//			static_cast<REAL>(lpDrawItem->rcItem.bottom - lpDrawItem->rcItem.top)
+	//		);
 
-			// Рисование текста кнопки
-			char szText[256];
-			GetWindowText(lpDrawItem->hwndItem, szText, sizeof(szText));
-			DrawText(lpDrawItem->hDC, szText, -1, &lpDrawItem->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+	//		// Рисование текста кнопки
+	//		char szText[256];
+	//		GetWindowText(lpDrawItem->hwndItem, szText, sizeof(szText));
+	//		DrawText(lpDrawItem->hDC, szText, -1, &lpDrawItem->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-			// Устанавливаем карандаш для рисования границ
-			HDC hdc = lpDrawItem->hDC;
-			HPEN hPen = CreatePen(PS_SOLID, 2, RGB(169, 169, 169));
-			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+	//		// Устанавливаем карандаш для рисования границ
+	//		HDC hdc = lpDrawItem->hDC;
+	//		HPEN hPen = CreatePen(PS_SOLID, 2, RGB(169, 169, 169));
+	//		HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
 
-			// Устанавливаем кисть для закраски (NULL, чтобы закраски не было)
-			HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+	//		// Устанавливаем кисть для закраски (NULL, чтобы закраски не было)
+	//		HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
 
-			// Рисуем прямоугольник (границы кнопки)
-			Rectangle(hdc, lpDrawItem->rcItem.left, lpDrawItem->rcItem.top, lpDrawItem->rcItem.right, lpDrawItem->rcItem.bottom);
+	//		// Рисуем прямоугольник (границы кнопки)
+	//		Rectangle(hdc, lpDrawItem->rcItem.left, lpDrawItem->rcItem.top, lpDrawItem->rcItem.right, lpDrawItem->rcItem.bottom);
 
-			// Восстанавливаем старые GDI-объекты
-			SelectObject(hdc, hOldPen);
-			SelectObject(hdc, hOldBrush);
+	//		// Восстанавливаем старые GDI-объекты
+	//		SelectObject(hdc, hOldPen);
+	//		SelectObject(hdc, hOldBrush);
 
-			// Уничтожаем созданные объекты
-			DeleteObject(hPen);
+	//		// Уничтожаем созданные объекты
+	//		DeleteObject(hPen);
 
-			return TRUE; // Обработано
-		}
-		break;
-	}
-	break;
+	//		return TRUE; // Обработано
+	//	}
+	//	break;
+	//}
+	//break;
 	case WM_CTLCOLOREDIT:
 	{
 		HDC hdcEdit = (HDC)wParam;
@@ -357,29 +365,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (GetDlgCtrlID(hwndEdit) == IDC_EDIT_DISPLAY)
 		{
 			// Устанавливаем цвет текста
-			SetTextColor(hdcEdit, RGB(0, 150, 0));
+			SetTextColor(hdcEdit, g_DISPLAY_FOREGROUND[color_index]);
 
 			// Устанавливаем цвет фона
-			SetBkColor(hdcEdit, RGB(190, 190, 190));
-
-			// Возвращаем кисть для заливки фона
-			return (INT_PTR)hbrBkgnd;
+			SetBkColor(hdcEdit, g_DISPLAY_BACKGROUND[color_index]);
+		HBRUSH hbrBackground = CreateSolidBrush(g_WINDOW_BACKGROUND[color_index]);
+		SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)hbrBackground);
+		SendMessage(hwnd, WM_ERASEBKGND, wParam, 0);
+		// Возвращаем кисть для заливки фона
+		return (INT_PTR)hbrBackground;
 		}
-		break;
 	}
 	break;
-	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hwnd, &ps);
-		Graphics graphics(hdc);
+	//case WM_PAINT:
+	//{
+	//	/*PAINTSTRUCT ps;
+	//	HDC hdc = BeginPaint(hwnd, &ps);
+	//	Graphics graphics(hdc);
 
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-		graphics.DrawImage(bgImage, 0, 0, rect.right, rect.bottom);
-		EndPaint(hwnd, &ps);
-	}
-	break;
+	//	RECT rect;
+	//	GetClientRect(hwnd, &rect);
+	//	graphics.DrawImage(bgImage, 0, 0, rect.right, rect.bottom);
+	//	EndPaint(hwnd, &ps);*/
+	//}
+	//break;
 	case WM_COMMAND:
 	{
 		CONST INT SIZE = 256;
@@ -480,24 +489,39 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		InsertMenu(hSubMenu, 1, MF_BYPOSITION | MF_STRING, IDR_METAL_MISTRAL, "Metal mistral");
 		InsertMenu(hSubMenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
 		InsertMenu(hSubMenu, 3, MF_BYPOSITION | MF_STRING, IDR_EXIT, "Exit");
-		BOOL item = TrackPopupMenuEx(hMainMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN | TPM_RETURNCMD, LOWORD(lParam), HIWORD(lParam), hwnd, NULL);
-		switch (item)
+		BOOL skin_index = TrackPopupMenuEx(hMainMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN | TPM_RETURNCMD, LOWORD(lParam), HIWORD(lParam), hwnd, NULL);
+		switch (skin_index)
 		{
-		case IDR_SQUARE_BLUE:	strcpy(sz_buffer, "Square blue"); break;
+		case IDR_SQUARE_BLUE:	strcpy(sz_buffer, "Square blue");  break;
 		case IDR_METAL_MISTRAL:	strcpy(sz_buffer, "Metal mistral"); break;
 		case IDR_EXIT:			DestroyWindow(hwnd);
-			PostQuitMessage(0);
+								PostQuitMessage(0);
 		}
-		if (item)SetSkin(hwnd, sz_buffer);
+
+		if (skin_index)SetSkin(hwnd, sz_buffer);
 
 		DestroyMenu(hSubMenu);
 		DestroyMenu(hMainMenu);
+
+		color_index = skin_index - IDR_CONTEXT_MENU - 1;
+		HWND hEditDisplay = GetDlgItem(hwnd, IDC_EDIT_DISPLAY);
+		HDC hdcDisplay = GetDC(hEditDisplay);
+		SendMessage(hwnd, WM_CTLCOLOREDIT, (WPARAM)hdcDisplay, (LPARAM)hEditDisplay);
+		ReleaseDC(hEditDisplay, hdcDisplay);
+		SendMessage(hEditDisplay, WM_GETTEXT, MAX_PATH, (LPARAM)sz_buffer);
+		SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_buffer);
 	}
 	break;
 	case WM_DESTROY:
-		if (bgImage)delete bgImage;
+	{
+		HWND hEdit = GetDlgItem(hwnd, IDC_EDIT_DISPLAY);
+		HDC hdc = GetDC(hEdit);
+		ReleaseDC(hEdit, hdc);
+
+		//if (bgImage)delete bgImage;
 		PostQuitMessage(0);
-		break;
+	}
+	break;
 	case WM_CLOSE:
 		DestroyWindow(hwnd);
 		break;
@@ -611,4 +635,5 @@ VOID SetSkin(HWND hwnd, CONST CHAR* skin)
 		);
 		SendMessage(hButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmpButton);
 	}
+	
 }
