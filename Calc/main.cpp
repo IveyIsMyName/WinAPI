@@ -117,6 +117,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static BOOL input_operation = FALSE;
 
 	static INT color_index = 0;
+	static HANDLE hMyFont = NULL;
 
 	switch (uMsg)
 	{
@@ -135,7 +136,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
-		AddFontResourceEx("Fonts\\digital-7.ttf", FR_PRIVATE, 0);
+		/////////////		 FONT		////////////////////////
+		//AddFontResourceEx("Fonts\\digital-7.ttf", FR_PRIVATE, 0);
+		////////////////////////////////////////////////////////
+		HINSTANCE hInstFont = LoadLibrary("Fonts\\digital-7.dll");
+		HRSRC hFontRes = FindResource(hInstFont, MAKEINTRESOURCE(101), "BINARY");
+		HGLOBAL hFntMem = LoadResource(hInstFont, hFontRes);
+		VOID* fntData = LockResource(hFntMem);
+		DWORD nFonts = 0;
+		DWORD len = SizeofResource(hInstFont, hFontRes);
+		hMyFont = AddFontMemResourceEx(fntData, len, nullptr, &nFonts);
 		HFONT hFont = CreateFont
 		(
 			g_i_DISPLAY_HEIGHT - 2, g_i_DISPLAY_HEIGHT / 3,
@@ -143,9 +153,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			FALSE, FALSE, FALSE,
 			DEFAULT_CHARSET, OUT_TT_PRECIS,
 			CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-			FF_DONTCARE, "digital-7"
+			FF_DONTCARE, "Digital-7"
 		);
+		
 		SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
+		FreeLibrary(hInstFont);
 
 		//TODO: Button Icons. 
 		CHAR sz_digit[2] = "";
@@ -522,7 +534,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		HWND hEdit = GetDlgItem(hwnd, IDC_EDIT_DISPLAY);
 		HDC hdc = GetDC(hEdit);
 		ReleaseDC(hEdit, hdc);
-
+		RemoveFontMemResourceEx(hMyFont);
 		//if (bgImage)delete bgImage;
 		PostQuitMessage(0);
 	}
@@ -640,7 +652,6 @@ VOID SetSkin(HWND hwnd, CONST CHAR* skin)
 		);
 		SendMessage(hButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmpButton);
 	}
-	
 }
 
 VOID SetSkinFromDLL(HWND hwnd, CONST CHAR* skin)
