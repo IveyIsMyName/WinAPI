@@ -3,6 +3,8 @@
 #include"resource.h"
 #include <iostream>
 #include <gdiplus.h>
+#include <Shlwapi.h>
+#pragma comment(lib, "Shlwapi.lib")
 #pragma comment (lib, "Gdiplus.lib")
 using namespace Gdiplus;
 
@@ -39,6 +41,7 @@ CONST COLORREF g_WINDOW_BACKGROUND[] = { RGB(0, 0, 150), RGB(75, 75, 75) };
 VOID SetSkin(HWND hwnd, CONST CHAR* skin);
 VOID SetSkinFromDLL(HWND hwnd, CONST CHAR* skin);
 VOID ProcessKey(HWND hwnd, WPARAM wParam, BOOL isKeyDown);
+VOID GetExeDirectory(TCHAR* buffer, DWORD size);
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -139,7 +142,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		/////////////		 FONT		////////////////////////
 		//AddFontResourceEx("Fonts\\digital-7.ttf", FR_PRIVATE, 0);
 		////////////////////////////////////////////////////////
-		HINSTANCE hInstFont = LoadLibrary("Fonts\\digital-7.dll");
+		CHAR szExePath[MAX_PATH];
+		GetExeDirectory(szExePath, MAX_PATH);
+		CHAR szFontDllPath[MAX_PATH];
+		PathCombine(szFontDllPath, szExePath, ("Fonts\\digital-7.dll"));
+
+		HINSTANCE hInstFont = LoadLibrary(szFontDllPath); //("..\\Debug\\digital-7.dll");
 		HRSRC hFontRes = FindResource(hInstFont, MAKEINTRESOURCE(101), "BINARY");
 		HGLOBAL hFntMem = LoadResource(hInstFont, hFontRes);
 		VOID* fntData = LockResource(hFntMem);
@@ -318,7 +326,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		);
 		//SendMessage(hButtonEQL, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapEQL);
 
-		SetSkin(hwnd, "Square blue");
+		//SetSkin(hwnd, "Square blue");
+		SetSkinFromDLL(hwnd, "Square blue");
 	}
 	break;
 	//case WM_DRAWITEM:
@@ -656,8 +665,10 @@ VOID SetSkin(HWND hwnd, CONST CHAR* skin)
 
 VOID SetSkinFromDLL(HWND hwnd, CONST CHAR* skin)
 {
-	CHAR filename[FILENAME_MAX]{};
-	sprintf(filename, "ButtonsBMP\\%s", skin);
+	CHAR szExePath[MAX_PATH]{};
+	GetExeDirectory(szExePath, MAX_PATH);
+	CHAR filename[MAX_PATH]{};
+	sprintf_s(filename, MAX_PATH, "%s\\ButtonsBMP\\%s", szExePath, skin);
 	HMODULE hInst = LoadLibrary(filename);
 	for (int i = IDC_BUTTON_0; i <= IDC_BUTTON_EQUAL; i++)
 	{
@@ -673,4 +684,10 @@ VOID SetSkinFromDLL(HWND hwnd, CONST CHAR* skin)
 		SendMessage(GetDlgItem(hwnd, i), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)buttonBMP);
 	}
 	FreeLibrary(hInst);
+}
+
+VOID GetExeDirectory(TCHAR* buffer, DWORD size)
+{
+	GetModuleFileName(NULL, buffer, size);
+	PathRemoveFileSpec(buffer);
 }
