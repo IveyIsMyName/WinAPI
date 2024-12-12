@@ -121,6 +121,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	static INT color_index = 0;
 	static HANDLE hMyFont = NULL;
+	static UINT currentSkinID = IDR_SQUARE_BLUE;
 
 	switch (uMsg)
 	{
@@ -327,7 +328,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		//SendMessage(hButtonEQL, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapEQL);
 
 		//SetSkin(hwnd, "Square blue");
-		SetSkinFromDLL(hwnd, "Square blue");
+		CHAR sz_skin[FILENAME_MAX] = "";
+		CHAR iniPath[MAX_PATH]{};
+		GetExeDirectory(iniPath, MAX_PATH);
+		strcat(iniPath, "\\config.ini");
+		GetPrivateProfileString("Settings", "LastSkin", "Square Blue", sz_skin, sizeof(sz_skin), iniPath);
+
+		SetSkinFromDLL(hwnd, sz_skin);
+		if (strcmp(sz_skin, "Square blue") == 0)currentSkinID = IDR_SQUARE_BLUE;
+		else if (strcmp(sz_skin, "Metal mistral") == 0)currentSkinID = IDR_METAL_MISTRAL;
+		else currentSkinID = IDR_SQUARE_BLUE;
 	}
 	break;
 	//case WM_DRAWITEM:
@@ -507,21 +517,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		HMENU hMainMenu = CreatePopupMenu();
 		HMENU hSubMenu = CreatePopupMenu();
 		InsertMenu(hMainMenu, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)hSubMenu, "Skins");
-		InsertMenu(hSubMenu, 0, MF_BYPOSITION | MF_STRING, IDR_SQUARE_BLUE, "Square blue");
-		InsertMenu(hSubMenu, 1, MF_BYPOSITION | MF_STRING, IDR_METAL_MISTRAL, "Metal mistral");
+		InsertMenu(hSubMenu, 0, MF_BYPOSITION | MF_STRING | ((currentSkinID == IDR_SQUARE_BLUE) ? MF_CHECKED : 0), IDR_SQUARE_BLUE, "Square blue");
+		InsertMenu(hSubMenu, 1, MF_BYPOSITION | MF_STRING | ((currentSkinID == IDR_METAL_MISTRAL) ? MF_CHECKED : 0), IDR_METAL_MISTRAL, "Metal mistral");
 		InsertMenu(hSubMenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
 		InsertMenu(hSubMenu, 3, MF_BYPOSITION | MF_STRING, IDR_EXIT, "Exit");
 		BOOL skin_index = TrackPopupMenuEx(hMainMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN | TPM_RETURNCMD, LOWORD(lParam), HIWORD(lParam), hwnd, NULL);
 		switch (skin_index)
 		{
-		case IDR_SQUARE_BLUE:	strcpy(sz_buffer, "Square blue");  break;
-		case IDR_METAL_MISTRAL:	strcpy(sz_buffer, "Metal mistral"); break;
+		case IDR_SQUARE_BLUE:	strcpy(sz_buffer, "Square blue");
+								currentSkinID = IDR_SQUARE_BLUE; break;
+		case IDR_METAL_MISTRAL:	strcpy(sz_buffer, "Metal mistral"); 
+								currentSkinID = IDR_METAL_MISTRAL; break;
 		case IDR_EXIT:			DestroyWindow(hwnd);
 								PostQuitMessage(0);
 		}
 
 		//if (skin_index)SetSkin(hwnd, sz_buffer);
-		if (skin_index)SetSkinFromDLL(hwnd, sz_buffer);
+
+		SetSkinFromDLL(hwnd, sz_buffer);
+		CHAR filePath[MAX_PATH]{};
+		GetExeDirectory(filePath, MAX_PATH);
+		strcat(filePath, "\\config.ini");
+		WritePrivateProfileStringA("Settings", "LastSkin", sz_buffer, filePath);
 
 		DestroyMenu(hSubMenu);
 		DestroyMenu(hMainMenu);
